@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
     const sectionKey = searchParams.get('sectionKey');
     const collectionKey = searchParams.get('collectionKey');
     const playlistKey = searchParams.get('playlistKey');
+    const viewMode = searchParams.get('viewMode');
 
     if (!sectionKey && !collectionKey && !playlistKey) {
       return NextResponse.json(
@@ -52,10 +53,21 @@ export async function GET(request: NextRequest) {
 
     // Fetch library content
     if (sectionKey) {
+      // Determine the type parameter based on viewMode
+      // Type 8 = Artists, Type 9 = Albums
+      let typeParam: string | undefined;
+      if (viewMode === 'album') {
+        typeParam = '9'; // Fetch albums
+      } else if (viewMode === 'artist') {
+        typeParam = '8'; // Fetch artists
+      }
+      // If viewMode is not set, don't pass type parameter (default behavior)
+
       const mediaContainer = await plexClient.getLibraryContent(
         primaryServer.host,
         session.authToken,
-        sectionKey
+        sectionKey,
+        typeParam
       );
       return NextResponse.json({
         items: mediaContainer.Metadata || [],

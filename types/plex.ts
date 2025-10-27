@@ -22,7 +22,7 @@ export interface PlexServer {
 
 export interface PlexLibrary {
   key: string;
-  type: 'movie' | 'show' | 'artist' | 'photo';
+  type: 'movie' | 'show' | 'artist' | 'album' | 'photo';
   title: string;
   agent: string;
   scanner: string;

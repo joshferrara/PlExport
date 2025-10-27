@@ -7,6 +7,8 @@ interface Library {
   key: string;
   type: string;
   title: string;
+  viewMode?: 'artist' | 'album';
+  originalTitle?: string;
 }
 
 interface MediaItem {
@@ -75,7 +77,35 @@ export default function DashboardPage() {
     try {
       const response = await fetch('/api/libraries');
       const data = await response.json();
-      setLibraries(data.libraries || []);
+      const rawLibraries = data.libraries || [];
+
+      // Duplicate artist-type libraries to show both artist and album views
+      const expandedLibraries: Library[] = [];
+      rawLibraries.forEach((library: Library) => {
+        if (library.type === 'artist') {
+          // Add original artist view
+          expandedLibraries.push({
+            ...library,
+            viewMode: 'artist',
+            originalTitle: library.title,
+          });
+
+          // Add album/book view
+          const albumLabel = library.title.toLowerCase().includes('audiobook')
+            ? 'Books'
+            : 'Albums';
+          expandedLibraries.push({
+            ...library,
+            title: `${library.title} (${albumLabel})`,
+            viewMode: 'album',
+            originalTitle: library.title,
+          });
+        } else {
+          expandedLibraries.push(library);
+        }
+      });
+
+      setLibraries(expandedLibraries);
     } catch (error) {
       console.error('Error fetching libraries:', error);
     }
@@ -86,9 +116,15 @@ export default function DashboardPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(
-        `/api/media?sectionKey=${selectedLibrary.key}`
-      );
+      const params = new URLSearchParams({
+        sectionKey: selectedLibrary.key,
+      });
+
+      if (selectedLibrary.viewMode) {
+        params.append('viewMode', selectedLibrary.viewMode);
+      }
+
+      const response = await fetch(`/api/media?${params.toString()}`);
       const data = await response.json();
       setMediaItems(data.items || []);
       setSelectedItems(new Set());
@@ -170,7 +206,7 @@ export default function DashboardPage() {
         body: JSON.stringify({
           items: itemsToExport,
           format,
-          libraryType: selectedLibrary?.type,
+          libraryType: selectedLibrary?.viewMode === 'album' ? 'album' : selectedLibrary?.type,
         }),
       });
 
@@ -360,6 +396,9 @@ export default function DashboardPage() {
                           {item.title}
                         </div>
                         <div className="text-sm text-gray-500">
+                          {selectedLibrary?.viewMode === 'album' && item.parentTitle && (
+                            <>{item.parentTitle} • </>
+                          )}
                           {item.year && `${item.year} • `}
                           {item.type && item.type}
                         </div>
