@@ -101,15 +101,21 @@ export class PlexClient {
 
       return resourcesResponse.data
         .filter((resource: any) => resource.provides === 'server')
-        .map((server: any) => ({
-          name: server.name,
-          host: server.connections?.[0]?.uri || '',
-          address: server.connections?.[0]?.address || '',
-          port: server.connections?.[0]?.port || 32400,
-          machineIdentifier: server.clientIdentifier,
-          version: server.productVersion,
-          accessToken: server.accessToken,
-        }));
+        .map((server: any) => {
+          // Find the best connection - prefer public/relay over local
+          const connections = server.connections || [];
+          const bestConnection = connections.find((conn: any) => conn.local === false) || connections[0];
+
+          return {
+            name: server.name,
+            host: bestConnection?.uri || '',
+            address: bestConnection?.address || '',
+            port: bestConnection?.port || 32400,
+            machineIdentifier: server.clientIdentifier,
+            version: server.productVersion,
+            accessToken: server.accessToken,
+          };
+        });
     } catch (error) {
       console.error('Error fetching servers:', error);
       // Return empty array if no servers found instead of throwing

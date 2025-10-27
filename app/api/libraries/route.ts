@@ -18,6 +18,8 @@ export async function GET() {
     }
 
     const primaryServer = servers[0];
+    console.log('Using Plex server:', { name: primaryServer.name, host: primaryServer.host });
+
     const libraries = await plexClient.getLibraries(
       primaryServer.host,
       session.authToken
@@ -30,7 +32,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     return NextResponse.json(
-      { error: 'Failed to fetch libraries' },
+      { error: 'Failed to fetch libraries', message: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
