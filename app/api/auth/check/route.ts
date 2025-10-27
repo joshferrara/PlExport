@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import PlexClient from '@/lib/plex-client';
-import { createSession, setSessionCookie } from '@/lib/session';
+import { createSession } from '@/lib/session';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,21 +35,9 @@ export async function POST(request: NextRequest) {
       username: user.username,
     });
 
-    console.log('Auth check - Setting cookie for user:', user.username);
-
-    const response = NextResponse.json({
-      authorized: true,
-      user: {
-        username: user.username,
-        email: user.email,
-        thumb: user.thumb,
-      },
-    });
-
-    // Set the session cookie
-    response.cookies.set({
-      name: 'plexport-session',
-      value: sessionToken,
+    // Set the session cookie using Next.js cookies API
+    const cookieStore = await cookies();
+    cookieStore.set('plexport-session', sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -56,10 +45,17 @@ export async function POST(request: NextRequest) {
       path: '/',
     });
 
-    console.log('Auth check - Setting cookie for user:', user.username);
+    console.log('Auth check - Cookie set for user:', user.username);
     console.log('Auth check - Cookie value length:', sessionToken.length);
 
-    return response;
+    return NextResponse.json({
+      authorized: true,
+      user: {
+        username: user.username,
+        email: user.email,
+        thumb: user.thumb,
+      },
+    });
   } catch (error) {
     console.error('Error checking PIN:', error);
     return NextResponse.json(
