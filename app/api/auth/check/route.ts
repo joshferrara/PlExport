@@ -56,8 +56,16 @@ export async function POST(request: NextRequest) {
     ].join('; ');
 
     response.headers.set('Set-Cookie', cookieOptions);
+    response.cookies.set('plexport-session', sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60,
+      path: '/',
+    });
 
-    console.log('Auth check - Set-Cookie header:', cookieOptions);
+    console.log('Auth check - Setting cookie for user:', user.username);
+    console.log('Auth check - Response cookies:', response.cookies.getAll().map(c => c.name));
 
     return response;
   } catch (error) {
