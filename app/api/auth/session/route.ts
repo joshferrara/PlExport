@@ -1,12 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
 import PlexClient from '@/lib/plex-client';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    console.log('Session check - Cookies from request:', request.cookies.getAll().map(c => c.name));
+
     const session = await getSession();
 
     if (!session) {
+      console.log('Session check - No session found');
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 

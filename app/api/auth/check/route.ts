@@ -45,18 +45,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Set the session cookie using Set-Cookie header
-    const cookieOptions = [
-      `plexport-session=${sessionToken}`,
-      'Path=/',
-      `Max-Age=${7 * 24 * 60 * 60}`,
-      'HttpOnly',
-      'SameSite=Lax',
-      ...(process.env.NODE_ENV === 'production' ? ['Secure'] : []),
-    ].join('; ');
-
-    response.headers.set('Set-Cookie', cookieOptions);
-    response.cookies.set('plexport-session', sessionToken, {
+    // Set the session cookie
+    response.cookies.set({
+      name: 'plexport-session',
+      value: sessionToken,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -65,7 +57,7 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('Auth check - Setting cookie for user:', user.username);
-    console.log('Auth check - Response cookies:', response.cookies.getAll().map(c => c.name));
+    console.log('Auth check - Cookie value length:', sessionToken.length);
 
     return response;
   } catch (error) {
