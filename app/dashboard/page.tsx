@@ -274,13 +274,13 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {libraries.map(library => (
               <button
-                key={library.key}
+                key={`${library.key}-${library.viewMode || 'default'}`}
                 onClick={() => {
                   setSelectedLibrary(library);
                   setSelectedCollection('');
                 }}
                 className={`p-4 rounded-lg border-2 transition-all ${
-                  selectedLibrary?.key === library.key
+                  selectedLibrary?.key === library.key && selectedLibrary?.viewMode === library.viewMode
                     ? 'border-orange-500 bg-orange-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
