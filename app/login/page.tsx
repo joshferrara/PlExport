@@ -13,7 +13,7 @@ export default function LoginPage() {
 
   // Check if already authenticated
   useEffect(() => {
-    fetch('/api/auth/session')
+    fetch('/api/auth/session', { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         if (data.authenticated) {
@@ -35,6 +35,7 @@ export default function LoginPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ pinId }),
+          credentials: 'include',
         });
 
         const data = await response.json();

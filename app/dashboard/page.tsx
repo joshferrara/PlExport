@@ -58,7 +58,7 @@ export default function DashboardPage() {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/session');
+      const response = await fetch('/api/auth/session', { credentials: 'include' });
       const data = await response.json();
 
       if (!data.authenticated) {
@@ -75,7 +75,7 @@ export default function DashboardPage() {
 
   const fetchLibraries = async () => {
     try {
-      const response = await fetch('/api/libraries');
+      const response = await fetch('/api/libraries', { credentials: 'include' });
       const data = await response.json();
       const rawLibraries = data.libraries || [];
 
@@ -124,7 +124,7 @@ export default function DashboardPage() {
         params.append('viewMode', selectedLibrary.viewMode);
       }
 
-      const response = await fetch(`/api/media?${params.toString()}`);
+      const response = await fetch(`/api/media?${params.toString()}`, { credentials: 'include' });
       const data = await response.json();
       setMediaItems(data.items || []);
       setSelectedItems(new Set());
@@ -140,7 +140,8 @@ export default function DashboardPage() {
 
     try {
       const response = await fetch(
-        `/api/collections?sectionKey=${selectedLibrary.key}&type=collections`
+        `/api/collections?sectionKey=${selectedLibrary.key}&type=collections`,
+        { credentials: 'include' }
       );
       const data = await response.json();
       setCollections(data.items || []);
@@ -153,7 +154,8 @@ export default function DashboardPage() {
     setLoading(true);
     try {
       const response = await fetch(
-        `/api/media?collectionKey=${encodeURIComponent(collectionKey)}`
+        `/api/media?collectionKey=${encodeURIComponent(collectionKey)}`,
+        { credentials: 'include' }
       );
       const data = await response.json();
       setMediaItems(data.items || []);
@@ -166,7 +168,7 @@ export default function DashboardPage() {
   };
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     router.push('/login');
   };
 
@@ -203,6 +205,7 @@ export default function DashboardPage() {
       const response = await fetch('/api/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           items: itemsToExport,
           format,
